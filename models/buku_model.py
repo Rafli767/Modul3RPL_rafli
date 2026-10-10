@@ -1,8 +1,10 @@
-from config.database import Database
+from config.database import get_connection
+
+from config.database import get_connection
 
 class BukuModel:
     def __init__(self):
-        self.db = Database()
+        self.db = get_connection() 
         self.conn = self.db.get_connection()
         self.table_name = "buku"
 
@@ -26,3 +28,41 @@ class BukuModel:
             cursor.close()
             return True
         return False
+#sambungan untuk tugas 4 RPL
+
+class BukuModel:
+    def __init__(self):
+        self.db = get_connection()
+
+    def create_buku(self, judul, penulis, tahun_terbit):
+        cursor = self.db.cursor()
+        query = "INSERT INTO buku (judul, penulis, tahun_terbit) VALUES (%s, %s, %s)"
+        val = (judul, penulis, tahun_terbit)
+        cursor.execute(query, val)
+        self.db.commit()
+        cursor.close()
+
+    def get_all_buku(self):
+        cursor = self.db.cursor(dictionary=True)
+        query = "SELECT * FROM buku"
+        cursor.execute(query)
+        result = cursor.fetchall()
+        cursor.close()
+        return result
+
+    # --- TAMBAHKAN DUA METODE DI BAWAH INI ---
+    def update_buku(self, id_buku, judul, penulis, tahun_terbit):
+        cursor = self.db.cursor()
+        query = "UPDATE buku SET judul = %s, penulis = %s, tahun_terbit = %s WHERE id_buku = %s"
+        val = (judul, penulis, tahun_terbit, id_buku)
+        cursor.execute(query, val)
+        self.db.commit()
+        cursor.close()
+
+    def delete_buku(self, id_buku):
+        cursor = self.db.cursor()
+        query = "DELETE FROM buku WHERE id_buku = %s"
+        val = (id_buku,)
+        cursor.execute(query, val)
+        self.db.commit()
+        cursor.close()
