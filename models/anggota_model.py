@@ -1,9 +1,9 @@
-from config.database import Database
+from config.database import get_connection
 
 class AnggotaModel:
     def __init__(self):
-        self.db = Database()
-        self.conn = self.db.get_connection()
+        # Menggunakan fungsi get_connection() langsung
+        self.conn = get_connection()
         self.table_name = "anggota"
 
     def get_all_anggota(self):
