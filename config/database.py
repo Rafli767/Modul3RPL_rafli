@@ -1,9 +1,14 @@
 import mysql.connector
 
 def get_connection():
-    return mysql.connector.connect(
-        host="localhost",
-        user="root",
-        password="",
-        database="perpustakaan"
-    )
+    try:
+        connection = mysql.connector.connect(
+            host="localhost",
+            user="root",
+            password="",
+            database="perpustakaan"
+        )
+        return connection
+    except mysql.connector.Error as err:
+        print(f"Koneksi database gagal: {err}")
+        return None

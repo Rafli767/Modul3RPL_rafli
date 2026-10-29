@@ -3,9 +3,13 @@ from models.buku_model import BukuModel
 from views.buku_view import BukuView
 
 class BukuController:
-    def __init__(self):
+    def __init__(self, user_role="anggota"):
         self.model = BukuModel()
         self.view = BukuView()
+        self.user_role = user_role  # Menyimpan role pengguna yang sedang login
+
+        # Mengubah judul window agar menampilkan role yang sedang aktif
+        self.view.title(f"Sistem Manajemen Perpustakaan - Mode: {self.user_role.upper()}")
 
         # Menyimpan ID buku yang sedang dipilih di tabel
         self.selected_id = None
@@ -17,6 +21,17 @@ class BukuController:
 
         # Binding event ketika baris tabel diklik
         self.view.tabel.bind("<<TreeviewSelect>>", self.pilih_data_tabel)
+
+        # --- PENERAPAN OTORISASI (ROLE-BASED ACCESS CONTROL) ---
+        if self.user_role == "anggota":
+            # Jika role adalah anggota, kunci form input dan nonaktifkan tombol aksi tulis/ubah/hapus
+            self.view.btn_simpan.configure(state="disabled", text="Simpan (Admin Only)")
+            self.view.btn_update.configure(state="disabled", text="Update (Admin Only)")
+            self.view.btn_delete.configure(state="disabled", text="Hapus (Admin Only)")
+            
+            self.view.entry_judul.configure(state="disabled")
+            self.view.entry_penulis.configure(state="disabled")
+            self.view.entry_tahun.configure(state="disabled")
 
         # Memuat data ke tabel saat pertama kali dibuka
         self.muat_data_tabel()
@@ -30,6 +45,11 @@ class BukuController:
             self.view.tabel.insert("", "end", values=(buku['id_buku'], buku['judul'], buku['penulis'], buku['tahun_terbit']))
 
     def simpan_data(self):
+        # Validasi Otorisasi: Anggota tidak boleh menambah data
+        if self.user_role == "anggota":
+            messagebox.showerror("Akses Ditolak", "Anda tidak memiliki izin untuk menambah data!")
+            return
+
         judul = self.view.entry_judul.get()
         penulis = self.view.entry_penulis.get()
         tahun = self.view.entry_tahun.get()
@@ -54,13 +74,20 @@ class BukuController:
             
             if values:
                 self.selected_id = values[0]
-                # Masukkan data ke form input di sebelah kiri
-                self.clear_form()
-                self.view.entry_judul.insert(0, values[1])
-                self.view.entry_penulis.insert(0, values[2])
-                self.view.entry_tahun.insert(0, values[3])
+                
+                # Jika admin, masukkan data ke form input untuk memudahkan update
+                if self.user_role == "admin":
+                    self.clear_form()
+                    self.view.entry_judul.insert(0, values[1])
+                    self.view.entry_penulis.insert(0, values[2])
+                    self.view.entry_tahun.insert(0, values[3])
 
     def update_data(self):
+        # Validasi Otorisasi: Anggota tidak boleh mengubah data
+        if self.user_role == "anggota":
+            messagebox.showerror("Akses Ditolak", "Anda tidak memiliki izin untuk memperbarui data!")
+            return
+
         if not self.selected_id:
             messagebox.showwarning("Peringatan", "Pilih data di tabel yang ingin diperbarui terlebih dahulu!")
             return
@@ -82,6 +109,11 @@ class BukuController:
             messagebox.showerror("Error", "Gagal memperbarui data.")
 
     def hapus_data(self):
+        # Validasi Otorisasi: Anggota tidak boleh menghapus data
+        if self.user_role == "anggota":
+            messagebox.showerror("Akses Ditolak", "Anda tidak memiliki izin untuk menghapus data!")
+            return
+
         if not self.selected_id:
             messagebox.showwarning("Peringatan", "Pilih data di tabel yang ingin dihapus terlebih dahulu!")
             return
@@ -97,9 +129,11 @@ class BukuController:
                 messagebox.showerror("Error", "Gagal menghapus data.")
 
     def clear_form(self):
-        self.view.entry_judul.delete(0, 'end')
-        self.view.entry_penulis.delete(0, 'end')
-        self.view.entry_tahun.delete(0, 'end')
+        # Hanya bersihkan form jika statusnya aktif (untuk admin)
+        if self.user_role == "admin":
+            self.view.entry_judul.delete(0, 'end')
+            self.view.entry_penulis.delete(0, 'end')
+            self.view.entry_tahun.delete(0, 'end')
 
     def run(self):
         self.view.mainloop()

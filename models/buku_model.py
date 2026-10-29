@@ -24,7 +24,6 @@ class BukuModel:
             print(f"Error saat menyimpan: {e}")
             return False
 
-    # TAMBAHKAN KODE INI
     def update_buku(self, id_buku, judul, penulis, tahun):
         try:
             cursor = self.conn.cursor()
@@ -43,6 +42,16 @@ class BukuModel:
             query = "DELETE FROM buku WHERE id_buku = %s"
             cursor.execute(query, (id_buku,))
             self.conn.commit()
+            
+            # Cek apakah tabel buku sekarang sudah kosong
+            cursor.execute("SELECT COUNT(*) FROM buku")
+            jumlah_data = cursor.fetchone()[0]
+            
+            # Jika tabel kosong, reset AUTO_INCREMENT kembali ke 1
+            if jumlah_data == 0:
+                cursor.execute("ALTER TABLE buku AUTO_INCREMENT = 1")
+                self.conn.commit()
+                
             cursor.close()
             return True
         except Exception as e:
