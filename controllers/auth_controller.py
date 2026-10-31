@@ -21,7 +21,9 @@ class AuthController:
         if user:
             messagebox.showinfo("Login Berhasil", f"Selamat datang, {user['username']} ({user['role']})!")
             self.view.destroy()
-            app_utama = BukuController(user_role=user['role'])
+            
+            # Menyesuaikan parameter menjadi 'role' agar cocok dengan BukuView
+            app_utama = BukuController(role=user['role'])
             app_utama.run()
         else:
             messagebox.showerror("Login Gagal", "Username atau Password salah!")

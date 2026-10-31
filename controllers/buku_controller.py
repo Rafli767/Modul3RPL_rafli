@@ -3,10 +3,10 @@ from models.buku_model import BukuModel
 from views.buku_view import BukuView
 
 class BukuController:
-    def __init__(self, user_role="anggota"):
+    def __init__(self, role="anggota"):
         self.model = BukuModel()
-        self.view = BukuView()
-        self.user_role = user_role  # Menyimpan role pengguna yang sedang login
+        self.view = BukuView(role=role)
+        self.user_role = role  # Menyimpan role pengguna yang sedang login
 
         # Mengubah judul window agar menampilkan role yang sedang aktif
         self.view.title(f"Sistem Manajemen Perpustakaan - Mode: {self.user_role.upper()}")
